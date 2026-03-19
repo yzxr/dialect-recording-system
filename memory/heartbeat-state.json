@@ -1,9 +1,9 @@
 {
   "lastChecks": {
-    "heartbeat": 1773777840,
+    "heartbeat": 1773950640,
     "email": null,
     "calendar": null,
-    "weather": 1773453840
+    "weather": 1773950640
   },
-  "notes": "Heartbeat cron running normally (every 2 hours). Weather checked at 10:04 (2026-03-14). Shanghai: ☀️ +10°C, NW 16km/h, 69% humidity. Security audit pending from 2026-03-13 (6.7/10 risk score). ClawHub API 限流中 - 等待超过 12 小时，技能安装暂停。"
+  "notes": "Heartbeat cron running normally (every 2 hours). Weather checked at 16:04 (2026-03-19). Shanghai: ⛅ 13°C, ENE 12km/h, 54% humidity. Today: 6-12°C, partly cloudy. Tomorrow: 8-13°C. Security audit pending from 2026-03-13 (6.7/10 risk score). ClawHub API 限流中 - 等待超过 12 小时，技能安装暂停。"
 }
