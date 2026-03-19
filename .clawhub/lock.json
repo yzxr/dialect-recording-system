@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "openclaw-skill-vetter": {
+      "version": "1.0.0",
+      "installedAt": 1772728090147
+    },
+    "proactive-agent-lite": {
+      "version": "1.0.0",
+      "installedAt": 1772729833010
+    },
+    "openclaw-backup": {
+      "version": "1.0.0",
+      "installedAt": 1773390249932
+    },
+    "skill-builder": {
+      "version": "1.0.5",
+      "installedAt": 1773394391444
+    },
+    "git-cli": {
+      "version": "1.0.0",
+      "installedAt": 1773394571768
+    },
+    "skill-guard": {
+      "version": "1.0.2",
+      "installedAt": 1773449353501
+    }
+  }
+}
