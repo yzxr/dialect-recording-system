@@ -46,3 +46,11 @@
 - [ ] `article-illustrator` - 文章配图
 - [ ] `capability-evolver` - 能力进化
 - [ ] `snews-aggregator-skill` - 全球日报聚合
+
+---
+## 定时任务
+
+### 每日早报（8:00 AM）
+- [x] 世界重大事件汇总 - 已配置（2026-03-19 起）
+- 发送时间：每天上午 8:00（Asia/Shanghai）
+- 内容：全球新闻、财经、科技、体育/娱乐要闻
