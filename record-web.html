@@ -508,10 +508,10 @@
                         <input type="text" id="customFilename" class="form-input" placeholder="留空则自动生成文件名">
                     </div>
                     
-                    <!-- 阿里云链接 -->
+                    <!-- 存储链接 -->
                     <div class="form-group">
-                        <label for="aliyunLink">☁️ 阿里云存储链接（可选）</label>
-                        <input type="url" id="aliyunLink" class="form-input" placeholder="https://...">
+                        <label for="storageLink">🔗 文件存储链接（可选）</label>
+                        <input type="url" id="storageLink" class="form-input" placeholder="https://... (阿里云/百度网盘/腾讯微云等)">
                     </div>
                     
                     <!-- 上传按钮 -->
@@ -680,17 +680,18 @@
             
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const customFilename = document.getElementById('customFilename').value.trim();
-            const aliyunLink = document.getElementById('aliyunLink').value.trim();
+            const storageLink = document.getElementById('storageLink').value.trim();
             
             const formData = new FormData();
             formData.append('audio', selectedFile, customFilename || selectedFile.name);
             formData.append('user_id', user.user_id || '');
             formData.append('phone', user.phone || '');
+            formData.append('custom_filename', customFilename);
             formData.append('script', document.getElementById('scriptContent').textContent);
             
-            // 如果有阿里云链接，一起发送
-            if (aliyunLink) {
-                formData.append('aliyun_link', aliyunLink);
+            // 如果有存储链接，一起发送
+            if (storageLink) {
+                formData.append('storage_link', storageLink);
             }
             
             try {

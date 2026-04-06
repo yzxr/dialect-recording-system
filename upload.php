@@ -56,7 +56,15 @@ if (!is_dir($date_dir)) {
 }
 
 // 生成文件名
-$filename = 'recording_' . $phone . '_' . time() . '_' . uniqid() . '.wav';
+$custom_name = $_POST['custom_filename'] ?? '';
+if (!empty($custom_name)) {
+    // 使用自定义文件名
+    $ext = pathinfo($_FILES['audio']['name'], PATHINFO_EXTENSION);
+    $filename = $custom_name . '.' . $ext;
+} else {
+    // 自动生成文件名
+    $filename = 'recording_' . $phone . '_' . time() . '_' . uniqid() . '.wav';
+}
 $filepath = $date_dir . $filename;
 
 // 移动上传文件
@@ -73,12 +81,15 @@ if (move_uploaded_file($_FILES['audio']['tmp_name'], $filepath)) {
             $user_id = $user ? $user['id'] : 0;
         }
         
+        // 获取存储链接
+        $storage_link = $_POST['storage_link'] ?? '';
+        
         // 插入录音记录
         $stmt = $pdo->prepare("
-            INSERT INTO recordings (user_id, audio_file, duration, status, created_at) 
-            VALUES (?, ?, 0, 0, NOW())
+            INSERT INTO recordings (user_id, audio_file, storage_link, duration, status, created_at) 
+            VALUES (?, ?, ?, 0, 0, NOW())
         ");
-        $stmt->execute([$user_id, $filepath]);
+        $stmt->execute([$user_id, $filepath, $storage_link]);
         
         $recording_id = $pdo->lastInsertId();
         
