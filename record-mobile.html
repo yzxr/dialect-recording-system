@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>录音采集 - 方言语音采集平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .user-info {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+        
+        /* 左侧话术栏 */
+        .script-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .script-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .script-header h2 {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .script-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .script-content {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .script-content:focus {
+            border-color: #667eea;
+        }
+        
+        .script-content:empty:before {
+            content: '请粘贴或输入话术内容...';
+            color: #999;
+        }
+        
+        /* 右侧录音区 */
+        .recording-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .recording-title {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .recording-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 1.5;
+        }
+        
+        .record-steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .step-desc {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .upload-area {
+            width: 100%;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8f9fa;
+        }
+        
+        .upload-area:hover {
+            background: #e8ebff;
+            border-color: #5a67d8;
+        }
+        
+        .upload-area.dragover {
+            background: #d0d4ff;
+            border-color: #4c51bf;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .upload-hint {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .upload-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .logout-btn {
+            padding: 8px 15px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn:hover {
+            background: #c53030;
+        }
+        
+        /* 滚动条样式 */
+        .script-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .script-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .script-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .script-content::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
+        
+        .platform-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            font-size: 2rem;
+        }
+        
+        .platform-icons span {
+            animation: bounce 2s infinite;
+        }
+        
+        .platform-icons span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .platform-icons span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ 方言语音采集</h1>
+        </div>
+        
+        <div class="user-info">
+            <div>
+                <strong>用户：</strong><span id="userName">-</span>
+                <span style="margin: 0 15px;">|</span>
+                <strong>手机：</strong><span id="userPhone">-</span>
+            </div>
+            <div class="control-buttons">
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- 左侧话术栏 -->
+            <div class="script-card">
+                <div class="script-header">
+                    <h2>📖 话术内容</h2>
+                    <div class="script-actions">
+                        <button class="btn btn-primary" onclick="pasteScript()">📋 粘贴</button>
+                        <button class="btn btn-success" onclick="saveScript()">💾 保存</button>
+                    </div>
+                </div>
+                <div class="script-content" id="scriptContent" contenteditable="true" spellcheck="false">
+                    今天天气真好，阳光明媚，万里无云。我站在窗前，看着外面的景色，心情格外舒畅。远处的山峦连绵起伏，近处的小河潺潺流水，构成了一幅美丽的画卷。鸟儿在枝头欢快地歌唱，仿佛在诉说着春天的故事。微风轻拂，带来阵阵花香，让人陶醉其中。这样美好的时光，真希望能永远停留。
+                </div>
+            </div>
+            
+            <!-- 右侧录音区 -->
+            <div class="recording-card">
+                <h2 class="recording-title">📱 使用手机录音</h2>
+                <p class="recording-subtitle">支持苹果 iPhone 和安卓 Android 所有手机</p>
+                
+                <div class="platform-icons">
+                    <span>🍎</span>
+                    <span>📱</span>
+                    <span>🤖</span>
+                </div>
+                
+                <div class="record-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">打开录音功能</div>
+                            <div class="step-desc">点击下方按钮，打开手机自带录音 APP</div>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">对照话术录音</div>
+                            <div class="step-desc">看着左侧话术，用手机录制您的方言语音</div>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">上传录音文件</div>
+                            <div class="step-desc">录完后点击下方区域，选择录音文件上传</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">点击选择录音文件</div>
+                    <div class="upload-hint">支持 WAV、MP3、M4A、AMR 等格式</div>
+                </div>
+                
+                <input type="file" id="fileInput" accept="audio/*" onchange="handleFileSelect(event)">
+                
+                <div class="status info" id="status">
+                    状态：准备就绪
+                </div>
+                
+                <div class="upload-status" id="uploadStatus"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API 基础地址
+        const API_BASE = '/api';
+        
+        // 页面加载时检查登录状态
+        window.onload = function() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.name) {
+                alert('请先登录');
+                window.location.href = 'frontend/index.html';
+                return;
+            }
+            
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userPhone').textContent = user.phone;
+            
+            // 加载保存的话术
+            loadScript();
+            
+            // 拖拽上传支持
+            setupDragDrop();
+        };
+        
+        // 粘贴话术
+        async function pasteScript() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const scriptContent = document.getElementById('scriptContent');
+                scriptContent.textContent = text;
+                scriptContent.focus();
+            } catch (error) {
+                alert('粘贴失败，请手动输入或使用 Ctrl+V 粘贴');
+            }
+        }
+        
+        // 保存话术
+        function saveScript() {
+            const scriptContent = document.getElementById('scriptContent').textContent;
+            localStorage.setItem('scriptContent', scriptContent);
+            
+            const status = document.getElementById('status');
+            status.textContent = '✓ 话术已保存';
+            status.className = 'status success';
+            
+            setTimeout(() => {
+                status.textContent = '状态：准备就绪';
+                status.className = 'status info';
+            }, 2000);
+        }
+        
+        // 加载话术
+        function loadScript() {
+            const savedScript = localStorage.getItem('scriptContent');
+            if (savedScript) {
+                document.getElementById('scriptContent').textContent = savedScript;
+            }
+        }
+        
+        // 处理文件选择
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadAudio(file);
+            }
+        }
+        
+        // 上传录音
+        async function uploadAudio(audioFile) {
+            const status = document.getElementById('status');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadArea = document.getElementById('uploadArea');
+            
+            status.textContent = '状态：正在上传...';
+            status.className = 'status info';
+            uploadStatus.textContent = '';
+            uploadArea.style.pointerEvents = 'none';
+            uploadArea.style.opacity = '0.6';
+            
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            const formData = new FormData();
+            formData.append('audio', audioFile, audioFile.name);
+            formData.append('user_id', user.user_id || '');
+            formData.append('phone', user.phone || '');
+            formData.append('script', document.getElementById('scriptContent').textContent);
+            
+            try {
+                const response = await fetch(API_BASE + '/upload.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    status.textContent = '状态：上传成功 ✓';
+                    status.className = 'status success';
+                    uploadStatus.textContent = '✓ 文件：' + result.filename;
+                    
+                    // 重置上传区域
+                    setTimeout(() => {
+                        uploadArea.style.pointerEvents = 'auto';
+                        uploadArea.style.opacity = '1';
+                        document.getElementById('fileInput').value = '';
+                    }, 3000);
+                } else {
+                    status.textContent = '状态：上传失败';
+                    status.className = 'status error';
+                    uploadStatus.textContent = '✗ ' + result.message;
+                    
+                    uploadArea.style.pointerEvents = 'auto';
+                    uploadArea.style.opacity = '1';
+                }
+            } catch (error) {
+                status.textContent = '状态：上传失败';
+                status.className = 'status error';
+                uploadStatus.textContent = '✗ 网络错误：' + error.message;
+                
+                uploadArea.style.pointerEvents = 'auto';
+                uploadArea.style.opacity = '1';
+            }
+        }
+        
+        // 拖拽上传支持
+        function setupDragDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.add('dragover');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.remove('dragover');
+                }, false);
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file && file.type.startsWith('audio/')) {
+                    uploadAudio(file);
+                } else {
+                    const status = document.getElementById('status');
+                    status.textContent = '错误：请选择音频文件';
+                    status.className = 'status error';
+                }
+            }, false);
+        }
+        
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('user');
+                window.location.href = 'frontend/index.html';
+            }
+        }
+        
+        // 支持 Ctrl+S 保存话术
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveScript();
+            }
+        });
+        
+        // 支持 Ctrl+V 粘贴
+        document.getElementById('scriptContent').addEventListener('paste', function(e) {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+            document.execCommand('insertText', false, text);
+        });
+    </script>
+</body>
+</html>

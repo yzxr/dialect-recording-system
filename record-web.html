@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>录音采集 - 方言语音采集平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .user-info {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+        
+        /* 左侧话术栏 */
+        .script-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .script-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .script-header h2 {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .script-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-success:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .script-content {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .script-content:focus {
+            border-color: #667eea;
+        }
+        
+        .script-content:empty:before {
+            content: '请粘贴或输入话术内容...';
+            color: #999;
+        }
+        
+        /* 右侧录音区 */
+        .recording-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .recording-title {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        /* 上传表单样式 */
+        .upload-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .upload-area {
+            width: 100%;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8f9fa;
+        }
+        
+        .upload-area:hover {
+            background: #e8ebff;
+            border-color: #5a67d8;
+        }
+        
+        .upload-area.dragover {
+            background: #d0d4ff;
+            border-color: #4c51bf;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .upload-hint {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        
+        .selected-file {
+            margin-top: 15px;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 8px;
+            color: #155724;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .form-group {
+            width: 100%;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        
+        .form-input:focus {
+            border-color: #667eea;
+        }
+        
+        .form-input::placeholder {
+            color: #999;
+        }
+        
+        .upload-form .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.05rem;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* 录音列表 */
+        .recordings-list {
+            width: 100%;
+            margin-top: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .recordings-list h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .recording-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .recording-item:last-child {
+            border-bottom: none;
+        }
+        
+        .recording-time {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        /* 滚动条样式 */
+        .script-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .script-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .script-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        /* 导出弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .modal-header h3 {
+            color: #667eea;
+            font-size: 1.3rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        /* 公众号标识 */
+        .wechat-footer {
+            position: fixed;
+            bottom: 10px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            color: #07c160;
+            font-weight: 500;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .wechat-footer:hover {
+            background: #07c160;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(7, 193, 96, 0.3);
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .logout-btn {
+            padding: 8px 15px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn:hover {
+            background: #c53030;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ 方言语音采集</h1>
+        </div>
+        
+        <div class="user-info">
+            <div>
+                <strong>用户：</strong><span id="userName">-</span>
+                <span style="margin: 0 15px;">|</span>
+                <strong>手机：</strong><span id="userPhone">-</span>
+            </div>
+            <div class="control-buttons">
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- 左侧话术栏 -->
+            <div class="script-card">
+                <div class="script-header">
+                    <h2>📖 话术内容</h2>
+                    <div class="script-actions">
+                        <button class="btn btn-primary" onclick="pasteScript()">📋 粘贴</button>
+                        <button class="btn btn-success" onclick="saveScript()">💾 保存</button>
+                    </div>
+                </div>
+                <div class="script-content" id="scriptContent" contenteditable="true" spellcheck="false">
+                    今天天气真好，阳光明媚，万里无云。我站在窗前，看着外面的景色，心情格外舒畅。远处的山峦连绵起伏，近处的小河潺潺流水，构成了一幅美丽的画卷。鸟儿在枝头欢快地歌唱，仿佛在诉说着春天的故事。微风轻拂，带来阵阵花香，让人陶醉其中。这样美好的时光，真希望能永远停留。
+                </div>
+            </div>
+            
+            <!-- 右侧录音区 -->
+            <div class="recording-card">
+                <h2 class="recording-title">📤 上传录音文件</h2>
+                <p style="color: #666; margin-bottom: 20px; text-align: center;">先用手机录音 APP 录好，再上传到平台</p>
+                
+                <!-- 上传表单 -->
+                <div class="upload-form">
+                    <!-- 文件选择 -->
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text">点击选择录音文件</div>
+                        <div class="upload-hint">支持 WAV、MP3、M4A、AMR 等格式</div>
+                        <div class="selected-file" id="selectedFile" style="display: none;"></div>
+                    </div>
+                    <input type="file" id="fileInput" accept="audio/*" onchange="handleFileSelect(event)">
+                    
+                    <!-- 自定义文件名 -->
+                    <div class="form-group">
+                        <label for="customFilename">📝 自定义文件名（可选）</label>
+                        <input type="text" id="customFilename" class="form-input" placeholder="留空则自动生成文件名">
+                    </div>
+                    
+                    <!-- 阿里云链接 -->
+                    <div class="form-group">
+                        <label for="aliyunLink">☁️ 阿里云存储链接（可选）</label>
+                        <input type="url" id="aliyunLink" class="form-input" placeholder="https://...">
+                    </div>
+                    
+                    <!-- 上传按钮 -->
+                    <button class="btn btn-success" onclick="uploadSelectedFile()" id="uploadBtn" disabled>
+                        ⬆️ 立即上传
+                    </button>
+                    
+                    <div class="status info" id="status">
+                        状态：准备就绪
+                    </div>
+                </div>
+                
+                <!-- 今日录音列表 -->
+                <div class="recordings-list" id="recordingsList" style="display: none;">
+                    <h4>📋 今日录音记录</h4>
+                    <div id="recordingsItems"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 导出弹窗 -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📦 导出录音</h3>
+                <button class="modal-close" onclick="closeExportModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                    <p style="color: #856404; margin-bottom: 5px;">
+                        <strong>💡 温馨提示：</strong>
+                    </p>
+                    <p style="color: #856404; font-size: 0.9rem; line-height: 1.5;">
+                        服务器录音会在 24 小时后自动删除<br>
+                        点击"存储到本地"可永久保存到手机
+                    </p>
+                </div>
+                
+                <p style="margin-bottom: 15px;">
+                    <strong>导出日期：</strong><span id="exportDate"></span><br>
+                    <strong>录音数量：</strong><span id="exportCount">-</span> 条
+                </p>
+                <div id="exportFilesList" style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                    <p style="color: #999; text-align: center;">正在加载录音记录...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeExportModal()">取消</button>
+                <button class="btn btn-info" onclick="shareRecording()">📤 分享</button>
+                <button class="btn btn-success" onclick="downloadRecording()">💾 存储到本地</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 公众号标识 -->
+    <div class="wechat-footer" onclick="alert('欢迎关注微信公众号：在云端 AI\n\n获取最新资讯和技术支持！')">
+        <span class="wechat-icon">💬</span>
+        <span>微信公众号：在云端 AI</span>
+    </div>
+    
+    <script>
+        // API 基础地址
+        const API_BASE = '/api';
+        
+        // 当前选中的文件
+        let selectedFile = null;
+        
+        // 页面加载时检查登录状态
+        window.onload = function() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.name) {
+                alert('请先登录');
+                window.location.href = 'frontend/index.html';
+                return;
+            }
+            
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userPhone').textContent = user.phone;
+            
+            // 加载保存的话术
+            loadScript();
+            
+            // 加载今日录音列表
+            loadTodayRecordings();
+            
+            // 设置拖拽上传
+            setupDragDrop();
+        };
+        
+        // 粘贴话术
+        async function pasteScript() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const scriptContent = document.getElementById('scriptContent');
+                scriptContent.textContent = text;
+                scriptContent.focus();
+            } catch (error) {
+                alert('粘贴失败，请手动输入或使用 Ctrl+V 粘贴');
+            }
+        }
+        
+        // 保存话术
+        function saveScript() {
+            const scriptContent = document.getElementById('scriptContent').textContent;
+            localStorage.setItem('scriptContent', scriptContent);
+            
+            const status = document.getElementById('status');
+            status.textContent = '✓ 话术已保存';
+            status.className = 'status success';
+            
+            setTimeout(() => {
+                status.textContent = '状态：准备就绪';
+                status.className = 'status info';
+            }, 2000);
+        }
+        
+        // 加载话术
+        function loadScript() {
+            const savedScript = localStorage.getItem('scriptContent');
+            if (savedScript) {
+                document.getElementById('scriptContent').textContent = savedScript;
+            }
+        }
+        
+        // 处理文件选择
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                
+                // 显示选中的文件
+                const selectedFileDiv = document.getElementById('selectedFile');
+                selectedFileDiv.textContent = '✓ 已选择：' + file.name + ' (' + formatFileSize(file.size) + ')';
+                selectedFileDiv.style.display = 'block';
+                
+                // 启用上传按钮
+                document.getElementById('uploadBtn').disabled = false;
+                
+                const status = document.getElementById('status');
+                status.textContent = '状态：文件已选择，点击"立即上传"';
+                status.className = 'status info';
+            }
+        }
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // 上传选中的文件
+        async function uploadSelectedFile() {
+            if (!selectedFile) {
+                alert('请先选择录音文件');
+                return;
+            }
+            
+            const status = document.getElementById('status');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            status.textContent = '状态：正在上传...';
+            status.className = 'status info';
+            uploadBtn.disabled = true;
+            
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const customFilename = document.getElementById('customFilename').value.trim();
+            const aliyunLink = document.getElementById('aliyunLink').value.trim();
+            
+            const formData = new FormData();
+            formData.append('audio', selectedFile, customFilename || selectedFile.name);
+            formData.append('user_id', user.user_id || '');
+            formData.append('phone', user.phone || '');
+            formData.append('script', document.getElementById('scriptContent').textContent);
+            
+            // 如果有阿里云链接，一起发送
+            if (aliyunLink) {
+                formData.append('aliyun_link', aliyunLink);
+            }
+            
+            try {
+                const response = await fetch(API_BASE + '/upload.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    status.textContent = '状态：上传成功 ✓';
+                    status.className = 'status success';
+                    
+                    // 重置表单
+                    setTimeout(() => {
+                        resetUploadForm();
+                        loadTodayRecordings();
+                    }, 2000);
+                } else {
+                    status.textContent = '状态：上传失败';
+                    status.className = 'status error';
+                    uploadBtn.disabled = false;
+                }
+            } catch (error) {
+                status.textContent = '状态：上传失败 - ' + error.message;
+                status.className = 'status error';
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        // 重置上传表单
+        function resetUploadForm() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
+            document.getElementById('customFilename').value = '';
+            document.getElementById('aliyunLink').value = '';
+            document.getElementById('uploadBtn').disabled = true;
+        }
+        
+        // 拖拽上传支持
+        function setupDragDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.add('dragover');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.remove('dragover');
+                }, false);
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file && file.type.startsWith('audio/')) {
+                    const fileInput = document.getElementById('fileInput');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    handleFileSelect({ target: { files: fileInput.files } });
+                } else {
+                    const status = document.getElementById('status');
+                    status.textContent = '错误：请选择音频文件';
+                    status.className = 'status error';
+                }
+            }, false);
+        }
+        
+        // 加载今日录音列表
+        async function loadTodayRecordings() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            try {
+                const response = await fetch(API_BASE + '/export.php?phone=' + user.phone + '&date=' + new Date().toISOString().split('T')[0]);
+                const result = await response.json();
+                
+                if (result.success && result.count > 0) {
+                    window.todayRecordings = result;
+                    
+                    const listDiv = document.getElementById('recordingsList');
+                    const itemsDiv = document.getElementById('recordingsItems');
+                    
+                    listDiv.style.display = 'block';
+                    itemsDiv.innerHTML = '';
+                    
+                    result.files.forEach((file, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'recording-item';
+                        itemDiv.innerHTML = `
+                            <span>${index + 1}. ${file.filename}</span>
+                            <span class="recording-time">${new Date(file.time).toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'})}</span>
+                        `;
+                        itemsDiv.appendChild(itemDiv);
+                    });
+                }
+            } catch (error) {
+                console.log('加载录音列表失败:', error);
+            }
+        }
+        
+        // 显示导出弹窗
+        function showExportModal() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('exportDate').textContent = today;
+            document.getElementById('exportModal').classList.add('show');
+            
+            loadExportFiles();
+        }
+        
+        // 关闭导出弹窗
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+        
+        // 加载导出文件列表
+        async function loadExportFiles() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const response = await fetch(API_BASE + '/export.php?phone=' + user.phone + '&date=' + today);
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.todayRecordings = result;
+                    document.getElementById('exportCount').textContent = result.count;
+                    
+                    const filesList = document.getElementById('exportFilesList');
+                    filesList.innerHTML = '';
+                    
+                    result.files.forEach((file, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.style.padding = '8px';
+                        itemDiv.style.borderBottom = '1px solid #e0e0e0';
+                        itemDiv.innerHTML = `
+                            <span style="color: #667eea;">🎙️</span>
+                            <span style="margin-left: 10px;">${file.filename}</span>
+                            <span style="color: #999; font-size: 0.85rem;">(${new Date(file.time).toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'})})</span>
+                        `;
+                        filesList.appendChild(itemDiv);
+                    });
+                } else {
+                    document.getElementById('exportFilesList').innerHTML = '<p style="color: #999; text-align: center;">今天还没有录音记录</p>';
+                    document.getElementById('exportCount').textContent = '0';
+                }
+            } catch (error) {
+                document.getElementById('exportFilesList').innerHTML = '<p style="color: #f00; text-align: center;">加载失败</p>';
+            }
+        }
+        
+        // 下载录音
+        function downloadRecording() {
+            if (!window.todayRecordings || !window.todayRecordings.zip_filepath) {
+                alert('没有可下载的录音文件');
+                return;
+            }
+            
+            const count = window.todayRecordings.count;
+            const filename = window.todayRecordings.zip_filename;
+            
+            if (confirm(`📦 准备存储 ${count} 条录音到本地\n\n文件名：${filename}\n\n✓ 存储后可永久保存\n✓ 不受 24 小时清理限制\n\n确定存储吗？`)) {
+                const downloadUrl = API_BASE + '/download.php?file=' + encodeURIComponent(window.todayRecordings.zip_filename) + '&path=' + encodeURIComponent(window.todayRecordings.zip_filepath);
+                
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = window.todayRecordings.zip_filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                setTimeout(() => {
+                    alert('✅ 存储成功！\n\n录音文件已保存到手机');
+                }, 1000);
+                
+                closeExportModal();
+            }
+        }
+        
+        // 分享录音
+        function shareRecording() {
+            if (!window.todayRecordings || !window.todayRecordings.zip_filepath) {
+                alert('没有可分享的录音文件');
+                return;
+            }
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '方言语音采集 - ' + new Date().toISOString().split('T')[0],
+                    text: '我今天录制了 ' + window.todayRecordings.count + '条方言语音',
+                    url: window.location.href
+                }).then(() => {
+                    closeExportModal();
+                }).catch((error) => {
+                    console.log('分享失败:', error);
+                    downloadRecording();
+                });
+            } else {
+                alert('您的浏览器不支持分享功能，将为您下载文件');
+                downloadRecording();
+            }
+        }
+        
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('user');
+                window.location.href = 'frontend/index.html';
+            }
+        }
+        
+        // 支持 Ctrl+S 保存话术
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveScript();
+            }
+        });
+    </script>
+</body>
+</html>

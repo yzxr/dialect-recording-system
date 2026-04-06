@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方言语音采集平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .auth-card {
+                padding: 25px;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ 方言语音采集平台</h1>
+            <p>记录乡音，传承文化</p>
+        </div>
+        
+        <div class="auth-card">
+            <div class="tabs">
+                <div class="tab active" data-tab="login">登录</div>
+                <div class="tab" data-tab="register">注册</div>
+            </div>
+            
+            <div id="message" class="message"></div>
+            
+            <!-- 登录表单 -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginPhone">手机号</label>
+                    <input type="tel" id="loginPhone" name="phone" placeholder="请输入手机号" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="请输入密码" required>
+                </div>
+                
+                <button type="submit" class="btn">登录</button>
+            </form>
+            
+            <!-- 注册表单 -->
+            <form id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label for="regName">姓名</label>
+                    <input type="text" id="regName" name="name" placeholder="请输入姓名" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPhone">手机号</label>
+                    <input type="tel" id="regPhone" name="phone" placeholder="请输入手机号" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="regCompany">公司</label>
+                        <input type="text" id="regCompany" name="company" placeholder="请输入公司" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regEmployeeId">工号</label>
+                        <input type="text" id="regEmployeeId" name="employee_id" placeholder="请输入工号" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regEmail">邮箱</label>
+                    <input type="email" id="regEmail" name="email" placeholder="请输入邮箱" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">密码</label>
+                    <input type="password" id="regPassword" name="password" placeholder="请设置密码（至少 6 位）" minlength="6" required>
+                </div>
+                
+                <button type="submit" class="btn">注册</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // API 基础地址（请根据实际部署修改）
+        const API_BASE = '/api';
+        
+        // Tab 切换
+        const tabs = document.querySelectorAll('.tab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const messageDiv = document.getElementById('message');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                if (tab.dataset.tab === 'login') {
+                    loginForm.classList.remove('hidden');
+                    registerForm.classList.add('hidden');
+                } else {
+                    loginForm.classList.add('hidden');
+                    registerForm.classList.remove('hidden');
+                }
+                
+                hideMessage();
+            });
+        });
+        
+        // 显示消息
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            setTimeout(() => hideMessage(), 5000);
+        }
+        
+        // 隐藏消息
+        function hideMessage() {
+            messageDiv.style.display = 'none';
+        }
+        
+        // 登录提交
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = loginForm.querySelector('.btn');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+            
+            const data = {
+                phone: document.getElementById('loginPhone').value,
+                password: document.getElementById('loginPassword').value
+            };
+            
+            try {
+                const response = await fetch(API_BASE + '/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('登录成功！欢迎 ' + result.data.name, 'success');
+                    // 保存用户信息到 localStorage
+                    localStorage.setItem('user', JSON.stringify(result.data));
+                    // 跳转到录音页面
+                    setTimeout(() => {
+                        window.location.href = 'record.html';
+                    }, 1000);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登录';
+            }
+        });
+        
+        // 注册提交
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = registerForm.querySelector('.btn');
+            btn.disabled = true;
+            btn.textContent = '注册中...';
+            
+            const data = {
+                name: document.getElementById('regName').value,
+                phone: document.getElementById('regPhone').value,
+                company: document.getElementById('regCompany').value,
+                employee_id: document.getElementById('regEmployeeId').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value
+            };
+            
+            try {
+                const response = await fetch(API_BASE + '/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('注册成功！正在跳转登录...', 'success');
+                    setTimeout(() => {
+                        tabs[0].click();
+                        document.getElementById('loginPhone').value = data.phone;
+                    }, 1500);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '注册';
+            }
+        });
+    </script>
+    
+    <!-- 版权信息 -->
+    <div style="text-align: center; color: rgba(255,255,255,0.8); margin-top: 30px; font-size: 0.9rem;">
+        <p>福州在云端科技有限公司 版权所有 © 2026</p>
+    </div>
+</body>
+</html>
