@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>批量下载</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h3>📥 批量下载录音</h3>
+        <div class="alert alert-info">
+            下载完成后，请点击"删除已下载文件"释放存储空间
+        </div>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>员工</th>
+                    <th>文件名</th>
+                    <th>方言类型</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                <tr>
+                    <td>{{ assignment.employee.name }}</td>
+                    <td>{{ assignment.recording_filename }}</td>
+                    <td>{{ assignment.script.dialect_type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-4">
+            <a href="/download/batch" class="btn btn-primary">📦 打包下载 ZIP</a>
+            <form method="POST" action="/delete-downloaded" class="d-inline">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('确定要删除已下载的录音文件吗？')">🗑️ 删除已下载文件</button>
+            </form>
+            <a href="/" class="btn btn-secondary">返回</a>
+        </div>
+    </div>
+</body>
+</html>

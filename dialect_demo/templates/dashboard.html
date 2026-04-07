@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>看板 - 方言采集系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎙️ 方言采集系统</a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-item nav-link text-light">
+                    👤 {{ current_user.name }} ({{ current_user.role }})
+                </span>
+                <a class="nav-item nav-link" href="/logout">退出</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <h3 class="mb-4">📊 数据看板 
+            {% if role == 'admin' %}
+                <span class="badge bg-primary">系统管理员 - 全局数据</span>
+            {% elif role == 'supervisor' %}
+                <span class="badge bg-success">团队主管 - 本团队数据</span>
+            {% else %}
+                <span class="badge bg-info">标注员 - 个人数据</span>
+            {% endif %}
+        </h3>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">总话术数</h5>
+                        <h2>{{ stats.total_scripts }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">待分配</h5>
+                        <h2>{{ stats.pending_scripts }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h5 class="card-title">进行中</h5>
+                        <h2>{{ stats.assigned_scripts }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">已完成</h5>
+                        <h2>{{ stats.completed_scripts }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">待录制</h5>
+                        <h2>{{ stats.pending_assignments }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">待审核</h5>
+                        <h2>{{ stats.submitted_assignments }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">已通过</h5>
+                        <h2>{{ stats.approved_assignments }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <h4>🚀 快捷操作</h4>
+        <div class="row">
+            {% if current_user.role in ['admin', 'supervisor'] %}
+            <div class="col-md-3">
+                <a href="/users/import" class="btn btn-outline-primary w-100">👥 导入员工</a>
+            </div>
+            <div class="col-md-3">
+                <a href="/scripts/import" class="btn btn-outline-primary w-100">📝 导入话术</a>
+            </div>
+            <div class="col-md-3">
+                <a href="/review" class="btn btn-outline-primary w-100">✅ 审核管理</a>
+            </div>
+            <div class="col-md-3">
+                <a href="/download" class="btn btn-outline-primary w-100">📥 批量下载</a>
+            </div>
+            {% endif %}
+            <div class="col-md-3 mt-2">
+                <a href="/assignments" class="btn btn-outline-primary w-100">📋 我的任务</a>
+            </div>
+            {% if current_user.role != 'annotator' %}
+            <div class="col-md-3 mt-2">
+                <a href="/scripts" class="btn btn-outline-primary w-100">📄 话术列表</a>
+            </div>
+            <div class="col-md-3 mt-2">
+                <a href="/users" class="btn btn-outline-primary w-100">👤 员工列表</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

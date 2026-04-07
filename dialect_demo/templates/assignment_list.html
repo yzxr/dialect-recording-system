@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>任务列表</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h3>📋 我的任务</h3>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>话术 ID</th>
+                    <th>方言类型</th>
+                    <th>话术内容</th>
+                    <th>状态</th>
+                    <th>截止时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                <tr>
+                    <td>{{ assignment.script.id }}</td>
+                    <td>{{ assignment.script.dialect_type }}</td>
+                    <td>{{ assignment.script.content[:30] }}...</td>
+                    <td>
+                        <span class="badge bg-{{ {'pending': 'warning', 'submitted': 'info', 'approved': 'success', 'rejected': 'danger'}[assignment.record_status] }}">
+                            {{ assignment.record_status }}
+                        </span>
+                    </td>
+                    <td>{{ assignment.deadline.strftime('%m-%d %H:%M') if assignment.deadline else '-' }}</td>
+                    <td>
+                        {% if assignment.record_status == 'pending' %}
+                        <a href="/assignments/{{ assignment.id }}/upload" class="btn btn-sm btn-primary">上传录音</a>
+                        {% elif assignment.record_status == 'rejected' %}
+                        <a href="/assignments/{{ assignment.id }}/upload" class="btn btn-sm btn-warning">重新上传</a>
+                        {% else %}
+                        <span class="text-muted">已完成</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/" class="btn btn-secondary">返回</a>
+    </div>
+</body>
+</html>
